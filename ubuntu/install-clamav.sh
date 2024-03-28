@@ -12,10 +12,15 @@ apt-get update && \
 systemctl enable clamav-daemon
 systemctl enable clamav-freshclam
 
-mkdir /var/log/antivirus
+# generate script for general running
+cat <<EOF | tee /home/ubuntu/clamscan.sh
+#!/usr/bin/env bash
+echo "=======scanning \$(date '+%Y-%m-%d-%H:%M:%S')=========="
+clamscan -ri --no-summary --exclude-dir="^/sys" /
+echo "=======scanned \$(date '+%Y-%m-%d-%H:%M:%S')=========="
+EOF
 
-# setup crontab job for automatic scanning daily and email reports
-crontab -l > mycron
-echo "03 3 * * * /usr/bin/clamscan -ri --no-summary / 2&1 >> /var/log/antivirus/antivus.log" >> mycron
-crontab mycron
-rm mycron
+chmod +x /home/ubuntu/clamscan.sh
+chown ubuntu:ubuntu /home/ubuntu/clamscan.sh
+
+(crontab -u ubuntu -l 2>/dev/null; echo "03 3 * * *  /bin/bash /home/ubuntu/clamscan.sh 2>&1 >> clamav-scan.log") | crontab -u ubuntu -
