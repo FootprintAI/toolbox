@@ -6,7 +6,7 @@ if (( $EUID != 0 )); then
    exit
 fi
 
-apt-get install -y fail2ban
+apt-get install -y fail2ban rsyslog
 
 # copy configures
 cp /etc/fail2ban/fail2ban.conf /etc/fail2ban/fail2ban.local
