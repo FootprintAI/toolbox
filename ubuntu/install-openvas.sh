@@ -12,3 +12,5 @@ docker compose -f docker-compose.yml up -d
 
 # wait a while for data sync and open browser
 # http://localhost:9392
+
+# account & passwd: admin /// admin
