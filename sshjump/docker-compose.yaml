@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  ssh-jump-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ssh-jump-server
+    restart: always
+    ports:
+      - "2222:22"  # Map SSH port to 2222 on host
+    volumes:
+      # Mount authorized_keys directory for SSH public keys
+      - ./config/authorized_keys:/etc/jump-server/authorized_keys
+      # Mount allowed CIDRs directory for IP whitelisting (inbound)
+      - ./config/allowed_cidrs:/etc/jump-server/allowed_cidrs
+      # Mount allowed destinations for outbound connections
+      - ./config/outbound_allowed:/etc/jump-server/outbound_allowed
+      # Mount logs for persistence
+      - ./logs:/var/log
+      # Add a named volume for ClamAV database to prevent permission issues
+      - clamav-db:/var/lib/clamav
+    cap_add:
+      - NET_ADMIN  # Required for iptables modifications
+      - NET_RAW    # Additional capability for iptables
+    # Network mode options (uncomment one if needed):
+    # network_mode: "host"  # Use host network (bypasses container networking)
+    # network_mode: "bridge"  # Use standard bridge networking (default)
+    privileged: true  # Needed for some iptables operations
+    environment:
+      # Timezone setting (change as needed)
+      - TZ=Asia/Taipei
+      
+      # Debug mode (set to true for verbose logging)
+      - DEBUG=false
+      
+      # Firewall settings
+      - STRICT_FIREWALL=true # Set to true in production for strict IP filtering
+      
+      # fail2ban configuration
+      - F2B_BANTIME=3600      # Ban time in seconds (1 hour)
+      - F2B_MAXRETRY=3        # Max retry attempts before ban
+      - F2B_FINDTIME=600      # Time window in seconds (10 minutes)
+      
+      # ClamAV configuration
+      - CLAMAV_SCAN_SCHEDULE=0 2 * * *  # Daily at 2 AM
+      
+      # Outbound connection controls
+      - ENABLE_OUTBOUND_RESTRICTIONS=true  # Control where users can SSH to
+    
+    # Configure health check
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "22"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  # Named volume for ClamAV database
+  clamav-db:
