@@ -1,0 +1,15 @@
+# Default allowed CIDRs for SSH Jump Server
+# Add one CIDR per line
+# Lines starting with # are comments
+
+# Always allow localhost
+127.0.0.1/32
+
+# Allows anywhere
+0.0.0.0/0
+
+# Example: Allow entire home/office network
+# 192.168.1.0/24
+
+# Example: Allow specific IP
+# 203.0.113.42/32
