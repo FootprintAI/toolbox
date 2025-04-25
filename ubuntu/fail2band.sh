@@ -12,6 +12,9 @@ apt-get install -y fail2ban rsyslog
 cp /etc/fail2ban/fail2ban.conf /etc/fail2ban/fail2ban.local
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
 
+# enable fail2ban
+systemctl enable fail2ban
+
 # check services 
 systemctl status fail2ban
 
