@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+# list first
+# docker exec <container-id>  ./listconfigs.sh
+#
+# docker exec <container-id> ./rmclient.sh <client-id>
