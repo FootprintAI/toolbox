@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  github-runner:
+    image: myoung34/github-runner:latest
+    container_name: github-actions-runner
+    restart: unless-stopped
+    environment:
+      # GitHub Configuration
+      REPO_URL: ${REPO_URL}                          # e.g., https://github.com/owner/repo
+      ACCESS_TOKEN: ${GITHUB_TOKEN}                   # GitHub Personal Access Token
+      RUNNER_NAME: ${RUNNER_NAME:-docker-runner}      # Optional: custom runner name
+      RUNNER_WORKDIR: ${RUNNER_WORKDIR:-/tmp/runner}  # Optional: working directory
+      RUNNER_GROUP: ${RUNNER_GROUP:-default}          # Optional: runner group
+      LABELS: ${RUNNER_LABELS:-docker,self-hosted}    # Optional: custom labels
+
+      # Runner Configuration
+      RUNNER_SCOPE: ${RUNNER_SCOPE:-repo}             # 'repo', 'org', or 'ent'
+      EPHEMERAL: ${EPHEMERAL:-false}                  # Remove runner after each job
+      DISABLE_AUTO_UPDATE: ${DISABLE_AUTO_UPDATE:-false}
+
+    volumes:
+      # Docker-in-Docker support (if you need to run Docker commands in workflows)
+      - /var/run/docker.sock:/var/run/docker.sock
+
+      # Persistent runner data (optional)
+      - runner-data:/tmp/runner
+
+      # Optional: Mount local directories for caching
+      # - ./runner-cache:/runner-cache
+
+    # Privileged mode (required for Docker-in-Docker)
+    privileged: true
+
+    # Security options
+    security_opt:
+      - label:disable
+
+    # Network configuration
+    networks:
+      - runner-network
+
+volumes:
+  runner-data:
+    driver: local
+
+networks:
+  runner-network:
+    driver: bridge
